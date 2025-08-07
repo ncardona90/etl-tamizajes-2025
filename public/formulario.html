@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Tamizaje</title>
+    
+    <!-- Tailwind CSS para estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* Estilos adicionales para mejorar la apariencia */
+        body {
+            background-color: #f0f2f5;
+        }
+        /* Estilo para el spinner de carga */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Ocultar flechas en inputs de tipo número */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="antialiased font-sans">
+
+    <div id="app-container" class="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+        
+        <!-- Contenedor principal con layout responsive -->
+        <div class="lg:grid lg:grid-cols-5 lg:gap-8">
+            
+            <!-- Columna del Formulario (ocupa 3 de 5 columnas en desktop) -->
+            <main class="lg:col-span-3">
+                <form id="tamizaje-form" class="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-xl">
+                    <div class="px-4 py-5 sm:p-8">
+                        <header class="mb-8">
+                            <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Formulario de Tamizaje</h1>
+                            <p class="mt-1 text-sm text-gray-500">Complete los datos para realizar el cálculo de riesgo.</p>
+                        </header>
+
+                        <!-- Indicador de GPS -->
+                        <div id="gps-indicator" class="mb-8 flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                            <i class="fas fa-location-arrow text-indigo-600"></i>
+                            <span id="gps-status" class="text-sm font-medium text-gray-600">Capturando ubicación...</span>
+                        </div>
+
+                        <!-- SECCIONES DEL FORMULARIO -->
+                        <div class="space-y-10">
+                            
+                            <!-- Sección 1: Información General -->
+                            <fieldset>
+                                <legend class="text-lg font-semibold leading-6 text-indigo-700 border-b border-indigo-200 pb-2 w-full">1. Información General</legend>
+                                <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                                    <div class="sm:col-span-3"><label for="fecha_intervencion" class="block text-sm font-medium leading-6 text-gray-900">Fecha Intervención*</label><input type="text" id="fecha_intervencion" name="fecha_intervencion" placeholder="dd/mm/aaaa" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="entorno_intervencion" class="block text-sm font-medium leading-6 text-gray-900">Entorno Intervención*</label><select id="entorno_intervencion" name="entorno_intervencion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-full"><label for="lugar_intervencion" class="block text-sm font-medium leading-6 text-gray-900">Lugar Intervención</label><input type="text" id="lugar_intervencion" name="lugar_intervencion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                    <div class="sm:col-span-2"><label for="hora_inicial_intervencion" class="block text-sm font-medium leading-6 text-gray-900">Hora Inicial</label><input type="time" id="hora_inicial_intervencion" name="hora_inicial_intervencion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                    <div class="sm:col-span-2"><label for="hora_final_intervencion" class="block text-sm font-medium leading-6 text-gray-900">Hora Final</label><input type="time" id="hora_final_intervencion" name="hora_final_intervencion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                    <div class="sm:col-span-2"><label for="codigo_tamizaje_manual" class="block text-sm font-medium leading-6 text-gray-900">Código Manual</label><input type="text" id="codigo_tamizaje_manual" name="codigo_tamizaje_manual" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                </div>
+                            </fieldset>
+                            
+                            <!-- Sección 2: Datos del Participante -->
+                            <fieldset>
+                                <legend class="text-lg font-semibold leading-6 text-indigo-700 border-b border-indigo-200 pb-2 w-full">2. Datos del Participante</legend>
+                                <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                                    <div class="sm:col-span-3"><label for="nombres" class="block text-sm font-medium leading-6 text-gray-900">Nombres*</label><input type="text" id="nombres" name="nombres" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="apellidos" class="block text-sm font-medium leading-6 text-gray-900">Apellidos*</label><input type="text" id="apellidos" name="apellidos" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="tipo_doc" class="block text-sm font-medium leading-6 text-gray-900">Tipo Documento*</label><select id="tipo_doc" name="tipo_doc" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="numero_documento" class="block text-sm font-medium leading-6 text-gray-900">Número Documento*</label><input type="number" id="numero_documento" name="numero_documento" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="nacionalidad" class="block text-sm font-medium leading-6 text-gray-900">Nacionalidad*</label><input type="text" id="nacionalidad" name="nacionalidad" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="fecha_nacimiento" class="block text-sm font-medium leading-6 text-gray-900">Fecha Nacimiento*</label><input type="text" id="fecha_nacimiento" name="fecha_nacimiento" placeholder="dd/mm/aaaa" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="sexo_asignado_nacimiento" class="block text-sm font-medium leading-6 text-gray-900">Sexo Asignado al Nacer*</label><select id="sexo_asignado_nacimiento" name="sexo_asignado_nacimiento" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="genero_identificado" class="block text-sm font-medium leading-6 text-gray-900">Género con el que se identifica</label><select id="genero_identificado" name="genero_identificado" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="orientacion_sexual" class="block text-sm font-medium leading-6 text-gray-900">Orientación Sexual</label><select id="orientacion_sexual" name="orientacion_sexual" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="grupo_etnico" class="block text-sm font-medium leading-6 text-gray-900">Grupo Étnico*</label><select id="grupo_etnico" name="grupo_etnico" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div id="otro_grupo_etnico_container" class="sm:col-span-3 hidden"><label for="otro_grupo_etnico" class="block text-sm font-medium leading-6 text-gray-900">Especifique Otro Grupo Étnico</label><input type="text" id="otro_grupo_etnico" name="otro_grupo_etnico" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                    <div class="sm:col-span-3"><label for="poblacion_condicion_situacion" class="block text-sm font-medium leading-6 text-gray-900">Población Condición/Situación*</label><select id="poblacion_condicion_situacion" name="poblacion_condicion_situacion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="poblacion_migrante" class="block text-sm font-medium leading-6 text-gray-900">Población Migrante*</label><select id="poblacion_migrante" name="poblacion_migrante" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="tiene_seres_sintientes" class="block text-sm font-medium leading-6 text-gray-900">Tiene seres sintientes*</label><select id="tiene_seres_sintientes" name="tiene_seres_sintientes" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                </div>
+                            </fieldset>
+
+                            <!-- Sección 3: Contacto y Ubicación -->
+                            <fieldset>
+                                <legend class="text-lg font-semibold leading-6 text-indigo-700 border-b border-indigo-200 pb-2 w-full">3. Contacto y Ubicación</legend>
+                                <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                                    <div class="sm:col-span-3"><label for="telefono_contacto" class="block text-sm font-medium leading-6 text-gray-900">Teléfono*</label><input type="tel" id="telefono_contacto" name="telefono_contacto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="correo_electronico" class="block text-sm font-medium leading-6 text-gray-900">Correo Electrónico</label><input type="email" id="correo_electronico" name="correo_electronico" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                    <div class="sm:col-span-full"><label for="direccion_residencia" class="block text-sm font-medium leading-6 text-gray-900">Dirección</label><input type="text" id="direccion_residencia" name="direccion_residencia" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                    <div class="sm:col-span-3"><label for="comuna" class="block text-sm font-medium leading-6 text-gray-900">Comuna*</label><input type="text" id="comuna" name="comuna" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="barrio_corregimiento_vereda" class="block text-sm font-medium leading-6 text-gray-900">Barrio/Vereda*</label><input type="text" id="barrio_corregimiento_vereda" name="barrio_corregimiento_vereda" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="eps" class="block text-sm font-medium leading-6 text-gray-900">EPS*</label><input type="text" id="eps" name="eps" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="tipo_aseguramiento" class="block text-sm font-medium leading-6 text-gray-900">Tipo Aseguramiento</label><select id="tipo_aseguramiento" name="tipo_aseguramiento" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="estrato_socioeconomico" class="block text-sm font-medium leading-6 text-gray-900">Estrato</label><input type="number" id="estrato_socioeconomico" name="estrato_socioeconomico" min="0" max="6" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                </div>
+                            </fieldset>
+
+                            <!-- Sección 4: Medidas Antropométricas -->
+                            <fieldset>
+                                <legend class="text-lg font-semibold leading-6 text-indigo-700 border-b border-indigo-200 pb-2 w-full">4. Medidas Antropométricas</legend>
+                                <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                                    <div class="sm:col-span-3"><label for="talla" class="block text-sm font-medium leading-6 text-gray-900">Talla (cm)*</label><input type="number" step="0.1" id="talla" name="talla" placeholder="Ej: 175" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="peso" class="block text-sm font-medium leading-6 text-gray-900">Peso (Kg)*</label><input type="number" step="0.1" id="peso" name="peso" placeholder="Ej: 70.5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="presion_sistolica" class="block text-sm font-medium leading-6 text-gray-900">Presión Sistólica (mmHg)*</label><input type="number" id="presion_sistolica" name="presion_sistolica" placeholder="Ej: 120" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="presion_diastolica" class="block text-sm font-medium leading-6 text-gray-900">Presión Diastólica (mmHg)*</label><input type="number" id="presion_diastolica" name="presion_diastolica" placeholder="Ej: 80" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></div>
+                                    <div class="sm:col-span-3"><label for="circunferencia_abdominal" class="block text-sm font-medium leading-6 text-gray-900">Circunferencia Abdominal (cm)</label><input type="number" id="circunferencia_abdominal" name="circunferencia_abdominal" placeholder="Ej: 90" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></div>
+                                </div>
+                            </fieldset>
+
+                            <!-- Sección 5: Factores de Riesgo y Hábitos -->
+                            <fieldset>
+                                <legend class="text-lg font-semibold leading-6 text-indigo-700 border-b border-indigo-200 pb-2 w-full">5. Factores de Riesgo y Hábitos</legend>
+                                <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                                    <div class="sm:col-span-3"><label for="actividad_fisica" class="block text-sm font-medium leading-6 text-gray-900">Actividad Física >30min/día?*</label><select id="actividad_fisica" name="actividad_fisica" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="frecuencia_frutas_verduras" class="block text-sm font-medium leading-6 text-gray-900">Consume Frutas/Verduras Diariamente?*</label><select id="frecuencia_frutas_verduras" name="frecuencia_frutas_verduras" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="medicacion_hipertension" class="block text-sm font-medium leading-6 text-gray-900">Toma Medicamentos para HTA?*</label><select id="medicacion_hipertension" name="medicacion_hipertension" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="glucosa_alta_historico" class="block text-sm font-medium leading-6 text-gray-900">Historial de Glucosa Alta?*</label><select id="glucosa_alta_historico" name="glucosa_alta_historico" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="antecedentes_familiares_diabetes" class="block text-sm font-medium leading-6 text-gray-900">Antecedentes Familiares de Diabetes?*</label><select id="antecedentes_familiares_diabetes" name="antecedentes_familiares_diabetes" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="fuma" class="block text-sm font-medium leading-6 text-gray-900">¿Fuma actualmente?*</label><select id="fuma" name="fuma" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-3"><label for="es_diabetico" class="block text-sm font-medium leading-6 text-gray-900">¿Diagnosticado con Diabetes?*</label><select id="es_diabetico" name="es_diabetico" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div id="tipo_diabetes_container" class="sm:col-span-3 hidden"><label for="tipo_diabetes" class="block text-sm font-medium leading-6 text-gray-900">Tipo de Diabetes</label><select id="tipo_diabetes" name="tipo_diabetes" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                    <div class="sm:col-span-full"><label for="enfermedad_cardiovascular_renal_colesterol" class="block text-sm font-medium leading-6 text-gray-900">¿Tiene ECV, ERC o Hipercolesterolemia?*</label><select id="enfermedad_cardiovascular_renal_colesterol" name="enfermedad_cardiovascular_renal_colesterol" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></select></div>
+                                </div>
+                            </fieldset>
+
+                             <!-- Sección 6: Observaciones -->
+                             <fieldset>
+                                <legend class="text-lg font-semibold leading-6 text-indigo-700 border-b border-indigo-200 pb-2 w-full">6. Observaciones</legend>
+                                <div class="mt-6">
+                                    <label for="observaciones" class="sr-only">Observaciones</label>
+                                    <textarea id="observaciones" name="observaciones" rows="4" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Añada cualquier observación adicional aquí..."></textarea>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+                    
+                    <!-- Pie del formulario con el botón de guardar -->
+                    <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
+                        <button type="submit" id="save-button" class="w-full sm:w-auto rounded-md bg-indigo-600 px-8 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span id="button-text">Guardar Tamizaje</span>
+                            <div id="button-loader" class="loader h-5 w-5 rounded-full border-4 border-t-4 border-gray-200 hidden mx-auto"></div>
+                        </button>
+                    </div>
+                </form>
+            </main>
+
+            <!-- Columna de Resultados (ocupa 2 de 5 columnas en desktop) -->
+            <aside class="lg:col-span-2 mt-8 lg:mt-0">
+                <div id="results-panel" class="sticky top-8 bg-white shadow-sm ring-1 ring-gray-900/5 rounded-xl">
+                    <div class="p-6">
+                        <h2 class="text-xl font-bold text-gray-900">Resultados Calculados</h2>
+                        <p class="mt-1 text-sm text-gray-500">Los valores se actualizan en tiempo real.</p>
+                        
+                        <div class="mt-6 space-y-4">
+                            <div class="flex justify-between items-baseline">
+                                <span class="font-medium text-gray-600">Edad</span>
+                                <span id="res-edad" class="font-bold text-lg text-gray-800">-- años</span>
+                            </div>
+                            <hr>
+                            <div class="flex justify-between items-baseline">
+                                <span class="font-medium text-gray-600">IMC</span>
+                                <span id="res-imc" class="font-bold text-lg text-gray-800">--</span>
+                            </div>
+                            <div id="res-imc-clasificacion" class="text-right font-semibold">--</div>
+                            <hr>
+                            <div class="flex justify-between items-baseline">
+                                <span class="font-medium text-gray-600">Riesgo FINDRISC</span>
+                                <span id="res-findrisc" class="font-bold text-lg text-gray-800">-- Puntos</span>
+                            </div>
+                            <div id="res-findrisc-clasificacion" class="text-right font-semibold">--</div>
+                            <hr>
+                            <div class="flex justify-between items-baseline">
+                                <span class="font-medium text-gray-600">Riesgo Cardiovascular (OMS)</span>
+                                <span id="res-oms" class="font-bold text-lg text-gray-800">--</span>
+                            </div>
+                            <div id="res-oms-clasificacion" class="text-right font-semibold">--</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+    
+    <!-- Modal de Notificación -->
+    <div id="notification-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div id="modal-icon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                    <i class="fas fa-check text-green-600 text-2xl"></i>
+                </div>
+                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900 mt-2">¡Éxito!</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p id="modal-message" class="text-sm text-gray-500">El tamizaje ha sido guardado correctamente.</p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="modal-close-btn" class="px-4 py-2 bg-indigo-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Scripts de la Aplicación -->
+    <script type="module">
+        // Importaciones de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- 1. CONFIGURACIÓN E INICIALIZACIÓN ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDtMpyp2GW_PuE26yRvuxvzZ6nRXlmAJJI",
+            authDomain: "tamizajese-etl.firebaseapp.com",
+            projectId: "tamizajese-etl",
+            storageBucket: "tamizajese-etl.appspot.com",
+            messagingSenderId: "802752430955",
+            appId: "1:802752430955:web:43588180dbdc64d1b4822e",
+            measurementId: "G-JSKGJLTRDH"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // --- 2. LÓGICA DE CÁLCULO (CalculationService) ---
+        class CalculationService {
+            // Tablas de riesgo cardiovascular de la OMS
+            static _tablaHombreNoDiabeticoNoFumador = [[1, 1, 2, 3], [1, 2, 3, 4], [2, 3, 4, 4], [3, 4, 4, 5]];
+            static _tablaHombreNoDiabeticoFumador = [[1, 2, 3, 4], [2, 3, 4, 4], [3, 4, 4, 5], [4, 4, 5, 5]];
+            static _tablaHombreDiabeticoNoFumador = [[2, 3, 4, 4], [3, 4, 4, 5], [4, 4, 5, 5], [4, 5, 5, 5]];
+            static _tablaHombreDiabeticoFumador = [[3, 4, 4, 5], [4, 4, 5, 5], [4, 5, 5, 5], [5, 5, 5, 5]];
+            static _tablaMujerNoDiabeticaNoFumadora = [[1, 1, 1, 1], [1, 1, 2, 2], [1, 2, 3, 3], [2, 3, 4, 4]];
+            static _tablaMujerNoDiabeticaFumadora = [[1, 1, 2, 2], [1, 2, 3, 4], [2, 3, 4, 4], [3, 4, 4, 5]];
+            static _tablaMujerDiabeticaNoFumadora = [[1, 2, 3, 4], [2, 3, 4, 4], [3, 4, 4, 5], [4, 4, 5, 5]];
+            static _tablaMujerDiabeticaFumadora = [[2, 3, 4, 4], [3, 4, 4, 5], [4, 4, 5, 5], [4, 5, 5, 5]];
+
+            calculateAge(birthDateString) {
+                if (!birthDateString || birthDateString.length !== 10) return null;
+                const [day, month, year] = birthDateString.split('/');
+                const birthDate = new Date(`${year}-${month}-${day}`);
+                if (isNaN(birthDate.getTime())) return null;
+                
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                return age < 0 ? 0 : age;
+            }
+
+            calculateIMC(weight, heightInCm) {
+                if (!weight || !heightInCm || heightInCm <= 0) return 0.0;
+                const heightInMeters = heightInCm / 100;
+                return weight / (heightInMeters * heightInMeters);
+            }
+
+            classifyIMC(imc) {
+                if (imc <= 0 || imc === null) return 'N/A';
+                if (imc < 18.5) return 'Bajo peso';
+                if (imc < 25.0) return 'Normal';
+                if (imc < 30.0) return 'Sobrepeso';
+                if (imc < 35.0) return 'Obesidad Grado I';
+                if (imc < 40.0) return 'Obesidad Grado II';
+                return 'Obesidad Grado III (Mórbida)';
+            }
+            
+            calculateAndClassifyFINDRISC({ age, imc, waistCircumference, gender, physicalActivity, eatsFruitsAndVegs, htaMedication, highGlucoseHistory, familyDiabetesHistory }) {
+                const requiredParams = [age, imc, waistCircumference, gender, physicalActivity, eatsFruitsAndVegs, htaMedication, highGlucoseHistory, familyDiabetesHistory];
+                if (requiredParams.some(p => p === null || p === undefined || p === '')) {
+                    return { puntaje: 0, clasificacion: 'Datos insuficientes' };
+                }
+
+                let score = 0;
+                if (age >= 45 && age <= 54) score += 2;
+                else if (age >= 55 && age <= 64) score += 3;
+                else if (age > 64) score += 4;
+
+                if (imc >= 25 && imc < 30) score += 1;
+                else if (imc >= 30) score += 3;
+
+                const isMale = gender.toLowerCase() === 'hombre' || gender.toLowerCase() === 'masculino';
+                if (isMale) {
+                    if (waistCircumference >= 94 && waistCircumference <= 102) score += 3;
+                    else if (waistCircumference > 102) score += 4;
+                } else {
+                    if (waistCircumference >= 80 && waistCircumference <= 88) score += 3;
+                    else if (waistCircumference > 88) score += 4;
+                }
+
+                if (physicalActivity === 'No') score += 2;
+                if (eatsFruitsAndVegs === 'NO todos los días') score += 1;
+                if (htaMedication === 'Si') score += 2;
+                if (highGlucoseHistory === 'Si') score += 5;
+
+                if (familyDiabetesHistory === 'Sí: padres, hermanos o hijos') score += 5;
+                else if (familyDiabetesHistory === 'Sí: abuelos, tía, tío, primo hermano') score += 3;
+
+                let clasificacion;
+                if (score < 7) clasificacion = 'Riesgo Bajo';
+                else if (score <= 11) clasificacion = 'Ligeramente Elevado';
+                else if (score <= 14) clasificacion = 'Riesgo Moderado';
+                else if (score <= 20) clasificacion = 'Riesgo Alto';
+                else clasificacion = 'Riesgo Muy Alto';
+
+                return { puntaje: score, clasificacion };
+            }
+
+            calculateAndClassifyWHORisk({ age, gender, systolicPressure, smokes, isDiabetic, hasPreviousCVD }) {
+                 const requiredParams = [age, gender, systolicPressure, smokes, isDiabetic, hasPreviousCVD];
+                 if (requiredParams.some(p => p === null || p === undefined || p === '')) {
+                    return { riesgoPorcentaje: 'N/A', clasificacionRiesgo: 'Datos insuficientes' };
+                }
+
+                if (hasPreviousCVD === 'Si') {
+                    return { riesgoPorcentaje: '≥40%', clasificacionRiesgo: 'Muy Alto' };
+                }
+
+                const isMale = ['Hombre', 'Masculino'].includes(gender);
+                const isSmoker = smokes === 'Si';
+                const hasDiabetes = isDiabetic === 'Si';
+
+                let table;
+                if (isMale) {
+                    if (hasDiabetes) {
+                        table = isSmoker ? CalculationService._tablaHombreDiabeticoFumador : CalculationService._tablaHombreDiabeticoNoFumador;
+                    } else {
+                        table = isSmoker ? CalculationService._tablaHombreNoDiabeticoFumador : CalculationService._tablaHombreNoDiabeticoNoFumador;
+                    }
+                } else {
+                    if (hasDiabetes) {
+                        table = isSmoker ? CalculationService._tablaMujerDiabeticaFumadora : CalculationService._tablaMujerDiabeticaNoFumadora;
+                    } else {
+                        table = isSmoker ? CalculationService._tablaMujerNoDiabeticaFumadora : CalculationService._tablaMujerNoDiabeticaNoFumadora;
+                    }
+                }
+
+                const ageIndex = (age >= 70) ? 3 : (age >= 60) ? 2 : (age >= 50) ? 1 : 0;
+                const pressureIndex = (systolicPressure >= 180) ? 3 : (systolicPressure >= 160) ? 2 : (systolicPressure >= 140) ? 1 : 0;
+                const riskCode = table[ageIndex][pressureIndex];
+
+                switch (riskCode) {
+                    case 1: return { riesgoPorcentaje: '<10%', clasificacionRiesgo: 'Bajo' };
+                    case 2: return { riesgoPorcentaje: '10% a <20%', clasificacionRiesgo: 'Moderado' };
+                    case 3: return { riesgoPorcentaje: '20% a <30%', clasificacionRiesgo: 'Alto' };
+                    case 4: return { riesgoPorcentaje: '30% a <40%', clasificacionRiesgo: 'Alto' };
+                    case 5: return { riesgoPorcentaje: '≥40%', clasificacionRiesgo: 'Muy Alto' };
+                    default: return { riesgoPorcentaje: 'Error', clasificacionRiesgo: 'Error' };
+                }
+            }
+        }
+        
+        // --- 3. LÓGICA DE LA APLICACIÓN ---
+        class TamizajeApp {
+            constructor() {
+                this.db = db;
+                this.auth = auth;
+                this.calcService = new CalculationService();
+                this.form = document.getElementById('tamizaje-form');
+                this.formData = {};
+                this.currentUser = null; // Almacenará el objeto de usuario autenticado
+                this.init();
+            }
+
+            init() {
+                this.setupAuthListener(); // Configurar el listener de autenticación
+                this.populateDropdowns();
+                this.setInitialValues();
+                this.setupEventListeners();
+                this.getLocation();
+            }
+
+            setupAuthListener() {
+                onAuthStateChanged(this.auth, (user) => {
+                    if (user) {
+                        // Usuario está autenticado
+                        this.currentUser = user;
+                        console.log("Usuario autenticado:", user.uid);
+                    } else {
+                        // Usuario no está autenticado, intentar iniciar sesión anónimamente
+                        this.currentUser = null;
+                        signInAnonymously(this.auth).catch(error => {
+                            console.error("Error de autenticación anónima:", error);
+                        });
+                    }
+                });
+            }
+            
+            populateDropdowns() {
+                const options = {
+                    entorno_intervencion: ['Hogar', 'Educativo', 'Comunitario', 'Laboral', 'Institucional'],
+                    tipo_doc: ['Cédula de Ciudadanía', 'Cédula de Extranjería', 'Pasaporte', 'Otro'],
+                    sexo_asignado_nacimiento: ['Masculino', 'Femenino'],
+                    genero_identificado: ['Masculino', 'Femenino', 'Transgénero', 'Transformista', 'Travesti', 'Transgenerista', 'Transexual', 'No binario', 'Fluido'],
+                    orientacion_sexual: ['Heterosexual', 'Homosexual', 'Bisexual', 'Pansexual', 'Asexual'],
+                    grupo_etnico: ['Ninguno', 'Otro', 'Indígena', 'Rrom', 'NARP'],
+                    poblacion_condicion_situacion: ['Ninguna', 'Persona con discapacidad', 'Víctima del conflicto armado', 'Habitante de y en calle', 'Persona privada de la libertad', 'Campesino', 'Madre Cabeza de Hogar'],
+                    poblacion_migrante: ['No aplica', 'Regular', 'Irregular'],
+                    tiene_seres_sintientes: ['No', 'Si'],
+                    tipo_aseguramiento: ['Contributivo', 'Subsidiado', 'Sin Aseguramiento', 'Régimen Especial'],
+                    actividad_fisica: ['Si', 'No'],
+                    frecuencia_frutas_verduras: ['Todos los días', 'NO todos los días'],
+                    medicacion_hipertension: ['Si', 'No'],
+                    glucosa_alta_historico: ['Si', 'No'],
+                    antecedentes_familiares_diabetes: ['No', 'Sí: abuelos, tía, tío, primo hermano', 'Sí: padres, hermanos o hijos'],
+                    es_diabetico: ['Si', 'No'],
+                    tipo_diabetes: ['N/A', '1', '2', 'Gestacional'],
+                    fuma: ['Si', 'No'],
+                    enfermedad_cardiovascular_renal_colesterol: ['No', 'Si'],
+                };
+
+                for (const [id, opts] of Object.entries(options)) {
+                    const select = document.getElementById(id);
+                    if (select) {
+                        select.innerHTML = ''; // Limpiar opciones
+                        // Añadir una opción por defecto vacía si el campo no es requerido
+                        if (!select.hasAttribute('required')) {
+                            const defaultOption = document.createElement('option');
+                            defaultOption.value = '';
+                            defaultOption.textContent = 'Seleccione...';
+                            select.appendChild(defaultOption);
+                        }
+                        opts.forEach(opt => {
+                            const optionEl = document.createElement('option');
+                            optionEl.value = opt;
+                            optionEl.textContent = opt;
+                            select.appendChild(optionEl);
+                        });
+                    }
+                }
+            }
+            
+            setInitialValues() {
+                const now = new Date();
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = now.getFullYear();
+                
+                const initialData = {
+                    fecha_intervencion: `${day}/${month}/${year}`,
+                    nacionalidad: 'Colombiana',
+                    entorno_intervencion: 'Comunitario',
+                    tipo_doc: 'Cédula de Ciudadanía',
+                    sexo_asignado_nacimiento: 'Masculino',
+                    grupo_etnico: 'Ninguno',
+                    poblacion_condicion_situacion: 'Ninguna',
+                    poblacion_migrante: 'No aplica',
+                    tiene_seres_sintientes: 'No',
+                    tipo_aseguramiento: 'Subsidiado',
+                    actividad_fisica: 'No',
+                    frecuencia_frutas_verduras: 'NO todos los días',
+                    medicacion_hipertension: 'No',
+                    glucosa_alta_historico: 'No',
+                    antecedentes_familiares_diabetes: 'No',
+                    es_diabetico: 'No',
+                    tipo_diabetes: 'N/A',
+                    fuma: 'No',
+                    enfermedad_cardiovascular_renal_colesterol: 'No',
+                };
+                
+                for (const [key, value] of Object.entries(initialData)) {
+                    const el = this.form.elements[key];
+                    if (el) {
+                        el.value = value;
+                    }
+                }
+                // Disparar un evento de input para que la lógica de recalculate se ejecute con los valores iniciales
+                this.recalculateAllScores();
+            }
+
+            setupEventListeners() {
+                this.form.addEventListener('input', (e) => {
+                    this.recalculateAllScores();
+                    this.handleConditionalFields(e.target.name);
+                });
+
+                this.form.addEventListener('submit', (e) => this.saveForm(e));
+                
+                ['fecha_intervencion', 'fecha_nacimiento'].forEach(id => {
+                    document.getElementById(id).addEventListener('input', this.formatDateInput);
+                });
+                
+                document.getElementById('modal-close-btn').addEventListener('click', () => {
+                    document.getElementById('notification-modal').classList.add('hidden');
+                });
+            }
+            
+            formatDateInput(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 8) value = value.slice(0, 8);
+                if (value.length > 4) {
+                    value = `${value.slice(0, 2)}/${value.slice(2, 4)}/${value.slice(4)}`;
+                } else if (value.length > 2) {
+                    value = `${value.slice(0, 2)}/${value.slice(2)}`;
+                }
+                e.target.value = value;
+            }
+
+            handleConditionalFields(fieldName) {
+                if (fieldName === 'grupo_etnico') {
+                    const grupoEtnico = this.formData['grupo_etnico'];
+                    const otroGrupoEtnicoContainer = document.getElementById('otro_grupo_etnico_container');
+                    if (grupoEtnico === 'Otro') {
+                        otroGrupoEtnicoContainer.classList.remove('hidden');
+                    } else {
+                        otroGrupoEtnicoContainer.classList.add('hidden');
+                        this.formData['otro_grupo_etnico'] = '';
+                        document.getElementById('otro_grupo_etnico').value = '';
+                    }
+                }
+
+                if (fieldName === 'es_diabetico') {
+                    const esDiabetico = this.formData['es_diabetico'];
+                    const tipoDiabetesContainer = document.getElementById('tipo_diabetes_container');
+                    if (esDiabetico === 'Si') {
+                        tipoDiabetesContainer.classList.remove('hidden');
+                    } else {
+                        tipoDiabetesContainer.classList.add('hidden');
+                        this.formData['tipo_diabetes'] = 'N/A';
+                    }
+                }
+            }
+
+            recalculateAllScores() {
+                const formElements = this.form.elements;
+                for (const element of formElements) {
+                    if (element.name) {
+                        this.formData[element.name] = element.type === 'number' && element.value !== '' ? parseFloat(element.value) : element.value;
+                    }
+                }
+
+                const age = this.calcService.calculateAge(this.formData.fecha_nacimiento);
+                const imc = this.calcService.calculateIMC(this.formData.peso, this.formData.talla);
+                const imcClassification = this.calcService.classifyIMC(imc);
+                
+                const findriscResult = this.calcService.calculateAndClassifyFINDRISC({
+                    age, imc, ...this.formData
+                });
+                
+                const omsResult = this.calcService.calculateAndClassifyWHORisk({
+                    age, 
+                    gender: this.formData.sexo_asignado_nacimiento,
+                    systolicPressure: this.formData.presion_sistolica,
+                    smokes: this.formData.fuma,
+                    isDiabetic: this.formData.es_diabetico,
+                    hasPreviousCVD: this.formData.enfermedad_cardiovascular_renal_colesterol
+                });
+
+                this.formData.edad = age;
+                this.formData.imc = imc ? parseFloat(imc.toFixed(2)) : null;
+                this.formData.clasificacion_imc = imcClassification;
+                this.formData.puntaje_findrisc_calculado = findriscResult.puntaje;
+                this.formData.riesgo_findrisc = findriscResult.clasificacion;
+                this.formData.riesgo_cardiovascular_oms_porcentaje = omsResult.riesgoPorcentaje;
+                this.formData.clasificacion_riesgo_cardiovascular_oms = omsResult.clasificacionRiesgo;
+
+                this.updateResultsUI({ age, imc, imcClassification, findriscResult, omsResult });
+            }
+            
+            updateResultsUI({ age, imc, imcClassification, findriscResult, omsResult }) {
+                const getColorForRisk = (classification) => {
+                    if (!classification) return 'text-gray-800';
+                    const text = classification.toLowerCase();
+                    if (text.includes('obesidad') || text.includes('muy alto') || text.includes('alto')) return 'text-red-600';
+                    if (text.includes('sobrepeso') || text.includes('moderado') || text.includes('ligeramente')) return 'text-orange-500';
+                    if (text.includes('normal') || text.includes('bajo')) return 'text-green-600';
+                    return 'text-gray-800';
+                };
+                
+                document.getElementById('res-edad').textContent = age !== null ? `${age} años` : '-- años';
+                document.getElementById('res-imc').textContent = imc > 0 ? imc.toFixed(1) : '--';
+                const imcClassEl = document.getElementById('res-imc-clasificacion');
+                imcClassEl.textContent = imcClassification || '--';
+                imcClassEl.className = `text-right font-semibold ${getColorForRisk(imcClassification)}`;
+                
+                document.getElementById('res-findrisc').textContent = `${findriscResult.puntaje} Puntos`;
+                const findriscClassEl = document.getElementById('res-findrisc-clasificacion');
+                findriscClassEl.textContent = findriscResult.clasificacion;
+                findriscClassEl.className = `text-right font-semibold ${getColorForRisk(findriscResult.clasificacion)}`;
+
+                document.getElementById('res-oms').textContent = omsResult.riesgoPorcentaje || '--';
+                const omsClassEl = document.getElementById('res-oms-clasificacion');
+                omsClassEl.textContent = omsResult.clasificacionRiesgo || '--';
+                omsClassEl.className = `text-right font-semibold ${getColorForRisk(omsResult.clasificacionRiesgo)}`;
+            }
+            
+            getLocation() {
+                const statusEl = document.getElementById('gps-status');
+                if (!navigator.geolocation) {
+                    statusEl.textContent = 'Geolocalización no soportada.';
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        this.formData.latitud = position.coords.latitude;
+                        this.formData.longitud = position.coords.longitude;
+                        statusEl.textContent = 'Ubicación capturada con éxito.';
+                        document.getElementById('gps-indicator').querySelector('i').classList.remove('text-indigo-600');
+                        document.getElementById('gps-indicator').querySelector('i').classList.add('text-green-600');
+                    },
+                    () => {
+                        statusEl.textContent = 'No se pudo obtener la ubicación.';
+                        document.getElementById('gps-indicator').querySelector('i').classList.remove('text-indigo-600');
+                        document.getElementById('gps-indicator').querySelector('i').classList.add('text-red-600');
+                    }
+                );
+            }
+
+            async saveForm(e) {
+                e.preventDefault();
+                if (!this.form.checkValidity()) {
+                    this.showNotification('Por favor, revise los campos requeridos marcados con *', 'error');
+                    this.form.reportValidity();
+                    return;
+                }
+                if (!this.currentUser) {
+                    this.showNotification('Error de autenticación. Por favor, espere un momento y vuelva a intentarlo.', 'error');
+                    return;
+                }
+
+                const saveButton = document.getElementById('save-button');
+                saveButton.disabled = true;
+                document.getElementById('button-text').classList.add('hidden');
+                document.getElementById('button-loader').classList.remove('hidden');
+
+                const dataToSave = { ...this.formData };
+                
+                const parseDate = (dmy) => {
+                    if (!dmy || dmy.length !== 10) return null;
+                    const [day, month, year] = dmy.split('/');
+                    return new Date(`${year}-${month}-${day}T12:00:00Z`);
+                };
+                dataToSave.fecha_intervencion_dt = parseDate(dataToSave.fecha_intervencion);
+                dataToSave.fecha_nacimiento_dt = parseDate(dataToSave.fecha_nacimiento);
+
+                dataToSave.createdAt = serverTimestamp();
+                // Asignar el nombre del usuario que carga el dato
+                dataToSave.uploadedBy = this.currentUser.displayName || `WebUser-${this.currentUser.uid.substring(0, 8)}`;
+
+                try {
+                    await addDoc(collection(this.db, "tamizajes"), dataToSave);
+                    this.showNotification('El tamizaje ha sido guardado correctamente.', 'success');
+                    this.form.reset();
+                    this.populateDropdowns();
+                    this.setInitialValues();
+                } catch (error) {
+                    console.error("Error al guardar en Firestore: ", error);
+                    this.showNotification(`Error al guardar: ${error.message}`, 'error');
+                } finally {
+                    saveButton.disabled = false;
+                    document.getElementById('button-text').classList.remove('hidden');
+                    document.getElementById('button-loader').classList.add('hidden');
+                }
+            }
+            
+            showNotification(message, type = 'success') {
+                const modal = document.getElementById('notification-modal');
+                const iconContainer = document.getElementById('modal-icon');
+                const icon = iconContainer.querySelector('i');
+                const title = document.getElementById('modal-title');
+                
+                document.getElementById('modal-message').textContent = message;
+
+                if (type === 'success') {
+                    title.textContent = '¡Éxito!';
+                    iconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100';
+                    icon.className = 'fas fa-check text-green-600 text-2xl';
+                } else {
+                    title.textContent = 'Error';
+                    iconContainer.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100';
+                    icon.className = 'fas fa-times text-red-600 text-2xl';
+                }
+                modal.classList.remove('hidden');
+            }
+        }
+
+        // Iniciar la aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => new TamizajeApp());
+
+    </script>
+</body>
+</html>
